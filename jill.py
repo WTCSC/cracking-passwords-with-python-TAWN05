@@ -1,9 +1,10 @@
 import re
 from typing import assert_never
 
-from pygments.console import ansiformat
-from pysss import password
+#from pygments.console import ansiformat
+#from pysss import password
 
+import sys
 import text_utils
 import hashlib
 import argparse
@@ -13,10 +14,10 @@ def jill(dfilename, pfilename):
     # Defines username like passwd this will be all of our usernames
     usrname = []
     # Defines answer this will be the end resault of this program
-    answer = ""
+    answer = []
     # Defines the var used for what username to use from the list.
+    not_cracked = []
     a = 0
-    fanswer = []
 
     # Opens are reads files makes password_text or password text, and puts the contents into a string
     password_file = open(f'{pfilename}', 'r')
@@ -26,6 +27,7 @@ def jill(dfilename, pfilename):
 
     # Opens and reads dictionary file and puts the contents into a string
     dictionary_file = open(f'{dfilename}', 'r')
+    dictionary_file_nlines = text_utils.count_lines(dfilename)
     dictionary_text = dictionary_file.read()
 
     # Makes and splits password_text into read_password_text or read password text this splits the text by new lines and colens
@@ -46,6 +48,8 @@ def jill(dfilename, pfilename):
     for x in passwd:
         # Adds 1 to a This is used to pick the correct username
         a += 1
+        not_cracked += [x]
+
         # Makes a loop that cycles through read_dictionary_text
         for y in read_dictionary_text:
             # Defines the hash and sets the message = to the current value of y also encodes this string
@@ -56,19 +60,27 @@ def jill(dfilename, pfilename):
             if x == hex_digest:
                 # If the hashed password and hashed dictionary text match then it adds the username and password to answer
                 #answer += (f'{usrname[(a - 1)]}:{y}\n')
-                answer = ('{0:02}:{1:02}'.format(usrname, password))
+                answer += ['{0:02}:{1:02}'.format(usrname[(a - 1)], y)]
+
+            
     password_file.close()
     dictionary_file.close()
     return answer
-#print(jill("wordlist.txt","passwords.txt"))
+
+print(jill("wordlist.txt","passwords.txt"))
 # Makes a variable to display answer in the correct format.
 """def main():
     parser = argparse.ArgumentParser(description='cracked passwords from two readable txt files')
-    parser.add_argument('dictionary_filename', help='The file to read passwords from')
-    parser.add_argument('password_filename', help='the file to read the dictionary list')
+    
+    parser.add_argument('dictionary_filename', help='The file to read dictionarys from')
+    
+    parser.add_argument('password_filename', help='the file to read the password list')
     args = parser.parse_args()
-    passwords = jill(args.dictionary_filename, args.password_filename)
+
+    # Makes a variable to display answer in the correct format.
+    passwords = jill(args.password_filename, args.dictionary_filename)
     for x in passwords:
         print(x)
+
 if __name__ == '__main__':
     main()"""
