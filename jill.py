@@ -57,14 +57,16 @@ def jill(pfilename, dfilename, cracked=False, timer=False, algorithm=False):
 
     # Makes a loop that goes through all strings in passwd
     for x in passwd:
+        # The beginning of the timer used to measure the time it took for the password to be cracked
         start_time = time.time()
-        # Adds 1 to a This is used to pick the correct username
+        # Adds 1 to a, This is used to pick the correct username
         a += 1
 
         # Makes a loop that cycles through read_dictionary_text
         for y in read_dictionary_text:
                 if algorithm:
                     # Compare the parsed argument value directly
+                    # Gives the hashing algorithm jill should use to crack the passwords
                     if algorithm == 'sha256':
                         used_algorithm = hashlib.sha256(str(y).encode('utf-8'))
                     elif algorithm == 'sha512':
@@ -85,15 +87,16 @@ def jill(pfilename, dfilename, cracked=False, timer=False, algorithm=False):
             # Compairs the password hash with the dictionary hash
                 if x == hex_digest:
                     end_time = time.time()
-                     # If the hashed password and hashed dictionary text match then it adds the username and password to answer
+                    # Defines times for formating
                     times = ''
 
                     if timer:
+                        # times is equal the end time - the start time and formatted to have 5 sig figs({0:.5f})
                         times = ' ({0:.5f} seconds)'.format(end_time - start_time)
-
+                    # If the hashed password and hashed dictionary text match then it adds the username and password to answer
                     answer += ['{0:02}:{1:02}{2}'.format(usrname[(a - 1)], y, times)]
-                    #answer.append(f"{usrname[a -1]}:{y} {times}")
                 else:
+                    # The var used to get the number of passwords not cracked
                     d += 1
 
     d = ((d - (dictionary_file_nlines * password_nlines)))
@@ -128,9 +131,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# this is for testing
-"""jill("passwords.txt","wordlist.txt", "-c","-t", "sha512")
-passwords = jill("passwords.txt", "wordlist.txt", "-c", "-t", "sha512")
-for x in passwords:
-    print(x)"""
