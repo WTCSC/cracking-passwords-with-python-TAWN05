@@ -1,10 +1,14 @@
 import re
+from hashlib import algorithms_available
 from typing import assert_never
 
 #from pygments.console import ansiformat
 #from pysss import password
 
 import sys
+
+from apt_pkg import sha256sum
+
 import text_utils
 import hashlib
 import argparse
@@ -20,15 +24,10 @@ def jill(pfilename, dfilename, cracked=False, timer=False, algorithm=False):
     answer = []
     # Defines the var used for what username to use from the list.
     a = 0
+    # Defines the var used to get the number of not cracked passwords
     d = 0
     start_time = 0
-    algorithm = args.algorithm
-    algorithms = (hashlib.sha256)
-
-    if algorithm:
-        
-        
-        
+    f = 0
 
     # Opens are reads files makes password_text or password text, and puts the contents into a string
     password_file = open(pfilename, 'r')
@@ -44,6 +43,7 @@ def jill(pfilename, dfilename, cracked=False, timer=False, algorithm=False):
     # Makes and splits password_text into read_password_text or read password text this splits the text by new lines and colens
     read_password_text = re.split('[\n:]', password_text)
     read_dictionary_text = dictionary_text.split('\n')
+    slicer_text = [password_text]
 
     # Defines b the var used to determen wheather it is a username or a password
     for b in range(0, (password_nlines * 2)):
@@ -63,23 +63,38 @@ def jill(pfilename, dfilename, cracked=False, timer=False, algorithm=False):
 
         # Makes a loop that cycles through read_dictionary_text
         for y in read_dictionary_text:
+                if algorithm:
+                    # Compare the parsed argument value directly
+                    if algorithm == 'sha256':
+                        used_algorithm = hashlib.sha256(str(y).encode('utf-8'))
+                    elif algorithm == 'sha512':
+                        used_algorithm = hashlib.sha512(str(y).encode('utf-8'))
+                    elif algorithm == 'md5':
+                        used_algorithm = hashlib.md5(str(y).encode('utf-8'))
+                    elif algorithm == 'sha3-512':
+                        used_algorithm = hashlib.sha3_512(str(y).encode('utf-8'))
+                    else:
+                        print(f"Unsupported algorithm: {algorithm}")
+                        return answer  # Exit if the algorithm is not supported
+                else:
+                    used_algorithm = hashlib.sha256(str(y).encode('utf-8'))
             # Defines the hash and sets the message = to the current value of y also encodes this string
-            hash = hashlib.sha256(str(y).encode('utf-8'))
+                hashed = used_algorithm
             # Turns the raw hash into hex
-            hex_digest = hash.hexdigest() 
-            # Compaiers the password hash with the dictonary hash
-            if x == hex_digest:
-                end_time = time.time()
-                # If the hashed password and hashed dictionary text match then it adds the username and password to answer
-                #answer += (f'{usrname[(a - 1)]}:{y}\n')
-                times = ''
+                hex_digest = hashed.hexdigest()
+            # Compairs the password hash with the dictionary hash
+                if x == hex_digest:
+                    end_time = time.time()
+                     # If the hashed password and hashed dictionary text match then it adds the username and password to answer
+                    times = ''
 
-                if timer:
-                    times = ' ({0:.5f} seconds)'.format(end_time - start_time)
+                    if timer:
+                        times = ' ({0:.5f} seconds)'.format(end_time - start_time)
 
-                answer += ['{0:02}:{1:02}{2}'.format(usrname[(a - 1)], y, times)]
-            else:
-                d += 1
+                    answer += ['{0:02}:{1:02}{2}'.format(usrname[(a - 1)], y, times)]
+                    #answer.append(f"{usrname[a -1]}:{y} {times}")
+                else:
+                    d += 1
 
     d = ((d - (dictionary_file_nlines * password_nlines)))
     if cracked:
@@ -88,7 +103,6 @@ def jill(pfilename, dfilename, cracked=False, timer=False, algorithm=False):
     dictionary_file.close()
     return answer
 
-# print(jill("wordlist.txt","passwords.txt"))
 # Makes a variable to display answer in the correct format.
 def main():
     parser = argparse.ArgumentParser(description='cracked passwords from two readable txt files')
@@ -103,15 +117,10 @@ def main():
     parser.add_argument("-c", "--cracked", help="gives number of passwords not cracked",
                         action="store_true")
     
-    parser.add_argument("-a", "--algorithm", help="sets a specific argorithm for the cracker")
-    
-    global args.
+    parser.add_argument("-a", "--algorithm", help="sets a specific algorithm for the cracker",
+                        choices=['sha256', 'sha512', 'md5', 'sha3-512'])
 
     args = parser.parse_args()
-    if args.timer:
-        print("timer turned on")
-        global args
-
     # Makes a variable to display answer in the correct format.
     passwords = jill(args.password_filename, args.dictionary_filename, args.cracked, args.timer, args.algorithm)
     for x in passwords:
@@ -119,3 +128,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# this is for testing
+"""jill("passwords.txt","wordlist.txt", "-c","-t", "sha512")
+passwords = jill("passwords.txt", "wordlist.txt", "-c", "-t", "sha512")
+for x in passwords:
+    print(x)"""
